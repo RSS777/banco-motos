@@ -145,8 +145,79 @@ chips.forEach((chip) => {
   });
 });
 
+const VAPID_PUBLIC_KEY =
+  "BAgsKO6Dkl2d799sY9Y9i7J3kuk58GC7thLoCpIKdMF9HQTeS_JftcAKmc9Df6gJO21nG8OuMLQnpki-RRAbMUE";
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = atob(base64);
+  return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
+}
+
+async function saveSubscription(subscription) {
+  const json = subscription.toJSON();
+  await fetch(`${SUPABASE_URL}/rest/v1/push_subscriptions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Prefer: "resolution=ignore-duplicates",
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+    },
+    body: JSON.stringify({
+      endpoint: json.endpoint,
+      p256dh: json.keys.p256dh,
+      auth: json.keys.auth,
+    }),
+  });
+}
+
+async function setupPush(registration) {
+  const pushToggle = document.getElementById("push-toggle");
+  const supported = "PushManager" in window && "Notification" in window;
+  if (!supported) return;
+
+  pushToggle.hidden = false;
+
+  const existing = await registration.pushManager.getSubscription();
+  if (existing) {
+    pushToggle.textContent = "notificações ativas";
+    pushToggle.dataset.state = "active";
+  } else if (Notification.permission === "denied") {
+    pushToggle.textContent = "notificações bloqueadas";
+    pushToggle.dataset.state = "denied";
+  }
+
+  pushToggle.addEventListener("click", async () => {
+    if (pushToggle.dataset.state === "active" || pushToggle.dataset.state === "denied") return;
+
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") {
+      pushToggle.textContent = "notificações bloqueadas";
+      pushToggle.dataset.state = "denied";
+      return;
+    }
+
+    try {
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+      });
+      await saveSubscription(subscription);
+      pushToggle.textContent = "notificações ativas";
+      pushToggle.dataset.state = "active";
+    } catch {
+      pushToggle.textContent = "falha ao ativar — tentar de novo";
+    }
+  });
+}
+
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js").catch(() => {});
+  navigator.serviceWorker
+    .register("sw.js")
+    .then((registration) => setupPush(registration))
+    .catch(() => {});
 }
 
 loadRecords();

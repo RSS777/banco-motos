@@ -54,6 +54,12 @@ a { color: inherit; }
 
 .dash-strip .wordmark .spark { color: var(--amber); }
 
+.dash-strip-right {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+}
+
 .dash-strip .readout {
   font-family: var(--mono);
   font-size: 0.8rem;
@@ -61,6 +67,29 @@ a { color: inherit; }
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+
+.push-toggle {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.3rem 0.55rem;
+  border: 1px solid var(--rim-dim);
+  border-radius: 3px;
+  background: var(--panel);
+  color: var(--ink-dim);
+  cursor: pointer;
+}
+
+.push-toggle:hover { color: var(--amber); border-color: var(--amber-dim); }
+
+.push-toggle[data-state="active"] {
+  color: var(--amber);
+  border-color: var(--amber-dim);
+  cursor: default;
+}
+
+.push-toggle[data-state="denied"] { color: var(--ink-dim); cursor: default; }
 
 /* ---- trip-computer search/filter row ---- */
 
