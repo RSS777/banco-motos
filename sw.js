@@ -1,4 +1,4 @@
-const CACHE_NAME = "banco-motos-v1";
+const CACHE_NAME = "banco-motos-v2";
 const SHELL = ["./", "./index.html", "./style.css", "./app.js", "./manifest.json"];
 
 self.addEventListener("install", (event) => {
@@ -20,8 +20,17 @@ self.addEventListener("fetch", (event) => {
   // Never cache the data itself — the shell is offline-installable, but
   // the content list should always reflect the latest daily run.
   if (event.request.url.includes("/rest/v1/")) return;
+  // Network-first for the shell: this project ships changes often and a
+  // stale cached app.js silently shadowing new deploys is worse than the
+  // occasional extra network round-trip. Cache is only the offline fallback.
   event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
+    fetch(event.request)
+      .then((response) => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
 
