@@ -27,6 +27,26 @@ class _FakeYoutubeDLWritesFile:
             f.write(b"fake video bytes")
 
 
+class _FakeYoutubeDLWritesAudioOnly:
+    """Stands in for a video whose only available yt-dlp format is audio —
+    the real-world case that caused Gemini to analyze background music
+    instead of the actual video content.
+    """
+
+    def __init__(self, options):
+        self._dir = os.path.dirname(options["outtmpl"])
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc_info):
+        return False
+
+    def download(self, urls):
+        with open(os.path.join(self._dir, "sound.mp3"), "wb") as f:
+            f.write(b"fake audio bytes")
+
+
 class _FakeYoutubeDLAlwaysFails:
     def __init__(self, options):
         pass
@@ -78,6 +98,20 @@ def test_download_failure_raises_processing_error_and_leaves_no_file(monkeypatch
         processor.process(candidate("https://www.tiktok.com/@x/video/2", platform="tiktok"))
 
     assert inner.seen_paths == []  # inner processor never even called
+
+
+def test_audio_only_download_is_rejected_not_sent_to_gemini(monkeypatch):
+    import pipeline.processors.tiktok_download_processor as module
+
+    monkeypatch.setattr(module.yt_dlp, "YoutubeDL", _FakeYoutubeDLWritesAudioOnly)
+    inner = _RecordingInnerProcessor()
+    processor = TikTokDownloadingProcessor(inner=inner)
+
+    with pytest.raises(ProcessingError, match="audio-only"):
+        processor.process(candidate("https://www.tiktok.com/@x/video/3", platform="tiktok"))
+
+    # Never handed off to Gemini analysis — that's the whole point of the check.
+    assert inner.seen_paths == []
 
 
 def test_non_tiktok_candidate_passes_through_without_downloading(monkeypatch):

@@ -8,7 +8,18 @@ import yt_dlp
 from pipeline.interfaces import Processor, ProcessingError
 from pipeline.models import ProcessedResult, VideoCandidate
 
-YTDLP_FORMAT = "mp4/best"
+YTDLP_FORMAT = "best[vcodec!=none]/best"
+# "mp4/best" silently produced an audio-only download for a real TikTok
+# video: yt-dlp's extractor found exactly one format for it — "audio",
+# mp3, no video track at all. That happens when the underlying video is no
+# longer really there (deleted/private since collection) and TikTok falls
+# back to serving just the reusable "sound"; yt-dlp still succeeds, so
+# nothing here raised, and Gemini ended up analyzing background music
+# instead of a video — producing a theme with nothing to do with what the
+# link actually shows. "best[vcodec!=none]/best" prefers a real video
+# format but still resolves instead of hard-erroring when only audio
+# exists; AUDIO_ONLY_EXTENSIONS below is what actually catches that case.
+AUDIO_ONLY_EXTENSIONS = {".mp3", ".m4a", ".aac", ".wav", ".opus", ".ogg"}
 
 
 class TikTokDownloadingProcessor:
@@ -54,4 +65,12 @@ class TikTokDownloadingProcessor:
         downloaded = glob.glob(os.path.join(tmp_dir, "*"))
         if not downloaded:
             raise ProcessingError(f"TikTok download produced no file for {url}")
-        return downloaded[0]
+
+        video_path = downloaded[0]
+        ext = os.path.splitext(video_path)[1].lower()
+        if ext in AUDIO_ONLY_EXTENSIONS:
+            raise ProcessingError(
+                f"TikTok download for {url} produced an audio-only file ({ext}), "
+                "not a video — refusing to analyze the wrong media"
+            )
+        return video_path
