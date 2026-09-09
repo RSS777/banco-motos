@@ -31,6 +31,17 @@ function escapeHtml(str) {
   ));
 }
 
+function youtubeThumbnail(videoUrl) {
+  const match = videoUrl.match(/[?&]v=([\w-]{6,})/);
+  return match ? `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg` : null;
+}
+
+function coverUrlFor(record) {
+  if (record.platform === "youtube") return youtubeThumbnail(record.video_url);
+  if (record.platform === "tiktok") return (record.metadata || {}).cover_url || null;
+  return null;
+}
+
 function renderTile(record) {
   const meta = record.metadata || {};
   const theme = meta.theme || "—";
@@ -39,6 +50,12 @@ function renderTile(record) {
   const platform = record.platform;
   const platformLabel = PLATFORM_LABEL[platform] || platform;
   const platformGlyph = platformLabel.slice(0, 2).toUpperCase();
+  const cover = coverUrlFor(record);
+
+  const swatch = cover
+    ? `<img class="glyph cover" src="${escapeHtml(cover)}" alt="" loading="lazy"
+         onerror="this.outerHTML='<span class=&quot;glyph&quot;>${escapeHtml(platformGlyph)}</span>'">`
+    : `<span class="glyph">${escapeHtml(platformGlyph)}</span>`;
 
   const tile = document.createElement("article");
   tile.className = "tile";
@@ -60,7 +77,7 @@ function renderTile(record) {
       <div class="gauge">
         <span class="label">Vídeo-fonte</span>
         <div class="source-swatch">
-          <span class="glyph">${escapeHtml(platformGlyph)}</span>
+          ${swatch}
           <a class="source-link" href="${escapeHtml(record.video_url)}" target="_blank" rel="noopener">abrir vídeo →</a>
         </div>
       </div>

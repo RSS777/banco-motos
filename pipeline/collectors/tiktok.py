@@ -47,6 +47,10 @@ def build_candidate_from_search_entry(entry: dict, term: str) -> VideoCandidate 
             "play_count": stats.get("playCount"),
             "digg_count": stats.get("diggCount"),
             "search_term": term,
+            # Signed TikTok CDN URL — expires (see the x-expires query param),
+            # typically within a day or two. Fine for a same-day review habit;
+            # not a durable thumbnail source.
+            "cover_url": item.get("video", {}).get("cover"),
         },
     )
 

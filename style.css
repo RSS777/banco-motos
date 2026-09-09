@@ -270,8 +270,8 @@ a { color: inherit; }
 }
 
 .source-swatch .glyph {
-  width: 1.7rem;
-  height: 1.7rem;
+  width: 2.4rem;
+  height: 2.4rem;
   flex: none;
   border: 1px solid var(--rim);
   border-radius: 3px;
@@ -283,6 +283,11 @@ a { color: inherit; }
   font-size: 0.7rem;
   font-weight: 600;
   color: var(--ink-dim);
+}
+
+.source-swatch img.glyph.cover {
+  object-fit: cover;
+  filter: saturate(0.85);
 }
 
 .gauge a.source-link {
