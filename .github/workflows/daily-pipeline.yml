@@ -24,8 +24,13 @@ jobs:
           .venv/bin/pip install --upgrade pip
           .venv/bin/pip install -r requirements.txt
 
-      - name: Install scrapling browser dependencies
-        run: .venv/bin/scrapling install
+      - name: Install browser binary
+        # Not `scrapling install`: it also shells out to `sudo playwright
+        # install-deps`, which has no password/askpass configured for the
+        # unprivileged runner user. OS-level deps are pre-installed on this
+        # VPS as root (see commit 8bcb998); only the browser binary itself
+        # needs fetching here, cached under the runner's own HOME.
+        run: .venv/bin/python -m playwright install chromium
 
       - name: Run daily pipeline
         env:
