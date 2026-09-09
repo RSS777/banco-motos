@@ -120,6 +120,50 @@ def test_url_already_in_store_is_skipped_before_processing():
     assert store.saved[0].video_url == "https://youtube.com/new"
 
 
+def test_transient_exists_failure_does_not_crash_the_round():
+    flaky_url = "https://youtube.com/flaky-exists-check"
+    other_url = "https://youtube.com/fine"
+    collector = FakeCollector(
+        [
+            CollectionOutcome(candidate=candidate(flaky_url)),
+            CollectionOutcome(candidate=candidate(other_url)),
+        ]
+    )
+    processor = FakeProcessor()
+    store = FakeStore(exists_raises_for={flaky_url})
+    notifier = FakeNotifier()
+
+    summary = run_daily_pipeline([collector], processor, store, notifier)
+
+    # A store.exists() failure degrades to "treat as new" rather than
+    # crashing the round, so both candidates still get processed.
+    assert summary.processed == 2
+    assert len(store.saved) == 2
+    assert len(notifier.notifications) == 1
+
+
+def test_transient_save_failure_counts_as_failed_and_round_continues():
+    flaky_url = "https://youtube.com/flaky-save"
+    other_url = "https://youtube.com/fine"
+    collector = FakeCollector(
+        [
+            CollectionOutcome(candidate=candidate(flaky_url)),
+            CollectionOutcome(candidate=candidate(other_url)),
+        ]
+    )
+    processor = FakeProcessor()
+    store = FakeStore(save_raises_for={flaky_url})
+    notifier = FakeNotifier()
+
+    summary = run_daily_pipeline([collector], processor, store, notifier)
+
+    assert summary.failed == 1
+    assert summary.processed == 1
+    assert len(store.saved) == 1
+    assert store.saved[0].video_url == other_url
+    assert len(notifier.notifications) == 1
+
+
 def test_idea_flagged_as_duplicate_by_processor_is_not_saved():
     duplicate_url = "https://youtube.com/same-idea-different-video"
     collector = FakeCollector(

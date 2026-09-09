@@ -40,15 +40,26 @@ class FakeProcessor:
 
 
 class FakeStore:
-    def __init__(self, existing_urls: set[str] | None = None):
+    def __init__(
+        self,
+        existing_urls: set[str] | None = None,
+        exists_raises_for: set[str] | None = None,
+        save_raises_for: set[str] | None = None,
+    ):
         self.saved = []
         self._existing_urls = set(existing_urls or set())
+        self._exists_raises_for = exists_raises_for or set()
+        self._save_raises_for = save_raises_for or set()
 
     def save(self, record) -> None:
+        if record.video_url in self._save_raises_for:
+            raise RuntimeError(f"simulated store failure saving {record.video_url}")
         self.saved.append(record)
         self._existing_urls.add(record.video_url)
 
     def exists(self, video_url: str) -> bool:
+        if video_url in self._exists_raises_for:
+            raise RuntimeError(f"simulated store failure checking {video_url}")
         return video_url in self._existing_urls
 
 

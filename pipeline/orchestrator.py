@@ -29,8 +29,20 @@ def run_daily_pipeline(
                 continue
             # Same video URL already stored: skip before it ever reaches the
             # processor, so a repeat costs nothing (no Gemini call) and
-            # doesn't eat into the volume cap below.
-            if store.exists(outcome.candidate.url):
+            # doesn't eat into the volume cap below. A transient store
+            # failure here (e.g. a Supabase gateway timeout) must not crash
+            # the whole round — worst case we reprocess a duplicate, which
+            # is far cheaper than losing every other candidate in the batch.
+            try:
+                is_duplicate_url = store.exists(outcome.candidate.url)
+            except Exception as exc:  # noqa: BLE001 - any store failure degrades, never crashes
+                logger.warning(
+                    "store.exists() failed for %s, proceeding as new: %s",
+                    outcome.candidate.url,
+                    exc,
+                )
+                is_duplicate_url = False
+            if is_duplicate_url:
                 duplicates += 1
                 continue
             candidates.append(outcome.candidate)
@@ -65,7 +77,12 @@ def run_daily_pipeline(
             script_pt_br=result.script_pt_br,
             collected_at=now().isoformat(),
         )
-        store.save(record)
+        try:
+            store.save(record)
+        except Exception as exc:  # noqa: BLE001 - a save failure shouldn't end the whole round
+            failed += 1
+            logger.warning("store.save() failed for %s: %s", candidate.url, exc)
+            continue
         processed += 1
 
     summary = RunSummary(

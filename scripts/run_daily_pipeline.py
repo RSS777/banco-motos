@@ -23,7 +23,13 @@ def main() -> None:
         TikTokCollector(),
     ]
     store = SupabaseStore.from_env()
-    recent_themes = store.recent_themes()
+    try:
+        recent_themes = store.recent_themes()
+    except Exception:
+        logging.getLogger(__name__).warning(
+            "Failed to fetch recent_themes, proceeding without dedup context", exc_info=True
+        )
+        recent_themes = []
     processor = TikTokDownloadingProcessor(
         inner=GeminiProcessor.from_env(recent_themes=recent_themes)
     )
