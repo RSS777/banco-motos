@@ -40,12 +40,19 @@ RESPONSE_SCHEMA = types.Schema(
 
 class GeminiProcessor:
     """Processor: a single multimodal Gemini call that both analyzes a
-    local video file and writes its pt-BR replication script, so a
-    candidate is never sent to Gemini twice.
+    video and writes its pt-BR replication script, so a candidate is
+    never sent to Gemini twice.
 
-    Requires candidate.local_video_path to be set (by a prior download
-    step, e.g. #7's transitory TikTok download) — this processor does not
-    fetch video itself.
+    Two video sources:
+    - candidate.local_video_path, if set (by a prior download step, e.g.
+      #7's transitory TikTok download): uploaded to Gemini's File API.
+    - a YouTube candidate (platform == "youtube") with no local file:
+      its public URL is passed straight to Gemini, which fetches YouTube
+      videos natively — no download needed, since YouTube already has no
+      "no login" scraping story to protect.
+
+    Any other candidate with neither reaches ProcessingError: this
+    processor never fetches non-YouTube video itself.
     """
 
     def __init__(self, client: genai.Client, model: str = DEFAULT_MODEL):
@@ -57,25 +64,19 @@ class GeminiProcessor:
         return cls(client=genai.Client(api_key=os.environ["GEMINI_API_KEY"]), **kwargs)
 
     def process(self, candidate: VideoCandidate) -> ProcessedResult:
-        if not candidate.local_video_path:
-            raise ProcessingError(
-                f"no local video file for candidate {candidate.url}; "
-                "a download step must set local_video_path before processing"
-            )
-
         try:
-            video_file = self._client.files.upload(file=candidate.local_video_path)
-            video_file = self._wait_until_active(video_file)
-
+            video_part = self._video_part(candidate)
             response = self._client.models.generate_content(
                 model=self._model,
-                contents=[video_file, PROMPT],
+                contents=[video_part, PROMPT],
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
                     response_schema=RESPONSE_SCHEMA,
                 ),
             )
             data = json.loads(response.text)
+        except ProcessingError:
+            raise
         except Exception as exc:  # noqa: BLE001 - any Gemini/network failure is a processing failure
             raise ProcessingError(f"Gemini processing failed for {candidate.url}: {exc}") from exc
 
@@ -84,6 +85,19 @@ class GeminiProcessor:
             hook=data["hook"],
             format=data["format"],
             script_pt_br=data["script_pt_br"],
+        )
+
+    def _video_part(self, candidate: VideoCandidate):
+        if candidate.local_video_path:
+            video_file = self._client.files.upload(file=candidate.local_video_path)
+            return self._wait_until_active(video_file)
+
+        if candidate.platform == "youtube":
+            return types.Part(file_data=types.FileData(file_uri=candidate.url))
+
+        raise ProcessingError(
+            f"no video source for candidate {candidate.url}: no local_video_path, "
+            f"and platform '{candidate.platform}' has no native URL support in Gemini"
         )
 
     def _wait_until_active(self, video_file, timeout_seconds: int = 60):

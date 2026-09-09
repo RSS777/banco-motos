@@ -12,19 +12,27 @@ YTDLP_FORMAT = "mp4/best"
 
 
 class TikTokDownloadingProcessor:
-    """Processor wrapper for TikTok candidates: downloads the video via
+    """Processor wrapper: for TikTok candidates, downloads the video via
     yt-dlp into a temp directory, delegates to `inner` (the real Gemini
     analysis/scripting), then always deletes the temp directory —
     success or failure — so the video never persists beyond this single
     call. A download failure (including a TikTok block/captcha) becomes
     a ProcessingError, which the orchestrator already treats as "skip
     this item, keep going" without retrying the same round.
+
+    Any other candidate (e.g. YouTube, which Gemini can fetch natively
+    by URL — see GeminiProcessor) is passed straight to `inner` unchanged;
+    this wrapper only ever downloads for the one platform that needs it,
+    so it can wrap `inner` for the whole daily pipeline, not just TikTok.
     """
 
     def __init__(self, inner: Processor):
         self._inner = inner
 
     def process(self, candidate: VideoCandidate) -> ProcessedResult:
+        if candidate.platform != "tiktok" or candidate.local_video_path:
+            return self._inner.process(candidate)
+
         with tempfile.TemporaryDirectory(prefix="tiktok-dl-") as tmp_dir:
             video_path = self._download(candidate.url, tmp_dir)
             downloaded_candidate = replace(candidate, local_video_path=video_path)

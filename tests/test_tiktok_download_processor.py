@@ -78,3 +78,24 @@ def test_download_failure_raises_processing_error_and_leaves_no_file(monkeypatch
         processor.process(candidate("https://www.tiktok.com/@x/video/2", platform="tiktok"))
 
     assert inner.seen_paths == []  # inner processor never even called
+
+
+def test_non_tiktok_candidate_passes_through_without_downloading(monkeypatch):
+    import pipeline.processors.tiktok_download_processor as module
+
+    def _fail_if_called(options):
+        raise AssertionError("yt-dlp should never be invoked for a non-TikTok candidate")
+
+    monkeypatch.setattr(module.yt_dlp, "YoutubeDL", _fail_if_called)
+
+    class _PassthroughInner:
+        def process(self, candidate):
+            assert candidate.local_video_path is None
+            return ProcessedResult(theme="t", hook="h", format="f", script_pt_br="s")
+
+    processor = TikTokDownloadingProcessor(inner=_PassthroughInner())
+    yt_candidate = candidate("https://www.youtube.com/watch?v=abc", platform="youtube")
+
+    result = processor.process(yt_candidate)
+
+    assert result.script_pt_br == "s"

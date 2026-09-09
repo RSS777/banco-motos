@@ -2,8 +2,6 @@ import os
 
 import pytest
 
-from google import genai
-
 from pipeline.models import CollectionOutcome
 from pipeline.orchestrator import run_daily_pipeline
 from pipeline.processors.gemini_processor import GeminiProcessor
@@ -51,13 +49,3 @@ def test_orchestrator_with_real_gemini_and_store_produces_full_record():
     assert record["metadata"]["format"]
 
     store._client.table("content_records").delete().eq("video_url", marker_url).execute()
-
-
-def test_missing_local_video_path_fails_processing_not_orchestration():
-    from pipeline.interfaces import ProcessingError
-
-    processor = GeminiProcessor(client=genai.Client(api_key=os.environ["GEMINI_API_KEY"]))
-    bare_candidate = candidate("https://example.com/no-file")
-
-    with pytest.raises(ProcessingError):
-        processor.process(bare_candidate)
