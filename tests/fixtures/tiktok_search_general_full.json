@@ -1,0 +1,69 @@
+{
+  "status_code": 0,
+  "cursor": 12,
+  "has_more": 1,
+  "data": [
+    {
+      "type": 1,
+      "item": {
+        "id": "7657539926774254855",
+        "desc": "Sim! É uma Moto Elétrica! Olha só a Robustez dela. #Scooter #scootereletrica #suprabike",
+        "createTime": 1782909956,
+        "video": {
+          "id": "7657539926774254855",
+          "duration": 71
+        },
+        "author": {
+          "id": "6864619098358760453",
+          "uniqueId": "suprabike",
+          "nickname": "Supra Bike"
+        },
+        "stats": {
+          "diggCount": 29600,
+          "shareCount": 4018,
+          "commentCount": 561,
+          "playCount": 763100,
+          "collectCount": 5118
+        },
+        "challenges": [
+          {"id": "7701", "title": "scooter"},
+          {"id": "1666536491066374", "title": "scootereletrica"},
+          {"id": "1689588175923202", "title": "suprabike"}
+        ]
+      }
+    },
+    {
+      "type": 2,
+      "relatedSearch": {"term": "moto eletrica preço"}
+    },
+    {
+      "type": 1,
+      "item": {
+        "id": "7699999999999999999",
+        "desc": "Review rápido dessa moto elétrica nova #motoeletrica",
+        "createTime": 1783000000,
+        "video": {
+          "id": "7699999999999999999",
+          "duration": 34
+        },
+        "author": {
+          "id": "1234567890",
+          "uniqueId": "motoreviewsbr",
+          "nickname": "Moto Reviews BR"
+        },
+        "stats": {
+          "diggCount": 1200,
+          "shareCount": 40,
+          "commentCount": 15,
+          "playCount": 30500,
+          "collectCount": 60
+        },
+        "challenges": [
+          {"id": "999", "title": "motoeletrica"}
+        ]
+      }
+    }
+  ],
+  "extra": {},
+  "log_pb": {}
+}
