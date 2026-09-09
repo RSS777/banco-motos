@@ -17,10 +17,17 @@ def run_daily_pipeline(
 ) -> RunSummary:
     candidates = []
     skipped = 0
+    duplicates = 0
     for collector in collectors:
         for outcome in collector.collect():
             if outcome.error is not None:
                 skipped += 1
+                continue
+            # Same video URL already stored: skip before it ever reaches the
+            # processor, so a repeat costs nothing (no Gemini call) and
+            # doesn't eat into the volume cap below.
+            if store.exists(outcome.candidate.url):
+                duplicates += 1
                 continue
             candidates.append(outcome.candidate)
 
@@ -33,6 +40,13 @@ def run_daily_pipeline(
             result = processor.process(candidate)
         except ProcessingError:
             failed += 1
+            continue
+
+        # Different video, but the processor judged the idea itself a
+        # near-duplicate of something already stored (see GeminiProcessor's
+        # recent_themes comparison) — don't save it either.
+        if result.is_duplicate:
+            duplicates += 1
             continue
 
         record = ContentRecord(
@@ -55,6 +69,7 @@ def run_daily_pipeline(
         processed=processed,
         failed=failed,
         skipped=skipped,
+        duplicates=duplicates,
     )
     notifier.notify(summary)
     return summary

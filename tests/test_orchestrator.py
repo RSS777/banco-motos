@@ -97,3 +97,44 @@ def test_volume_cap_is_respected_across_collectors():
     assert summary.candidates_seen == 12
     assert summary.processed == 12
     assert len(store.saved) == 12
+
+
+def test_url_already_in_store_is_skipped_before_processing():
+    already_stored_url = "https://youtube.com/already-there"
+    collector = FakeCollector(
+        [
+            CollectionOutcome(candidate=candidate(already_stored_url)),
+            CollectionOutcome(candidate=candidate("https://youtube.com/new")),
+        ]
+    )
+    processor = FakeProcessor()
+    store = FakeStore(existing_urls={already_stored_url})
+    notifier = FakeNotifier()
+
+    summary = run_daily_pipeline([collector], processor, store, notifier)
+
+    assert summary.duplicates == 1
+    assert summary.processed == 1
+    assert summary.candidates_seen == 1  # the duplicate never reaches the cap/processing count
+    assert len(store.saved) == 1
+    assert store.saved[0].video_url == "https://youtube.com/new"
+
+
+def test_idea_flagged_as_duplicate_by_processor_is_not_saved():
+    duplicate_url = "https://youtube.com/same-idea-different-video"
+    collector = FakeCollector(
+        [
+            CollectionOutcome(candidate=candidate(duplicate_url)),
+            CollectionOutcome(candidate=candidate("https://youtube.com/original")),
+        ]
+    )
+    processor = FakeProcessor(duplicate_idea_urls={duplicate_url})
+    store = FakeStore()
+    notifier = FakeNotifier()
+
+    summary = run_daily_pipeline([collector], processor, store, notifier)
+
+    assert summary.duplicates == 1
+    assert summary.processed == 1
+    assert len(store.saved) == 1
+    assert store.saved[0].video_url == "https://youtube.com/original"

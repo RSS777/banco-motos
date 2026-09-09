@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timedelta, timezone
 
 from supabase import Client, create_client
 
@@ -34,3 +35,35 @@ class SupabaseStore:
                 "collected_at": record.collected_at,
             }
         ).execute()
+
+    def exists(self, video_url: str) -> bool:
+        result = (
+            self._client.table(TABLE_NAME)
+            .select("id", count="exact")
+            .eq("video_url", video_url)
+            .limit(1)
+            .execute()
+        )
+        return (result.count or 0) > 0
+
+    def recent_themes(self, days: int = 30, limit: int = 200) -> list[str]:
+        """Theme + hook of recently stored records, for the processor to
+        compare a new candidate's idea against before saving it.
+        """
+        since = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+        result = (
+            self._client.table(TABLE_NAME)
+            .select("metadata")
+            .gte("collected_at", since)
+            .order("created_at", desc=True)
+            .limit(limit)
+            .execute()
+        )
+        themes = []
+        for row in result.data:
+            meta = row.get("metadata") or {}
+            theme = meta.get("theme")
+            if theme:
+                hook = meta.get("hook", "")
+                themes.append(f"{theme} — {hook}" if hook else theme)
+        return themes

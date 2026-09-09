@@ -36,6 +36,12 @@ class ProcessedResult:
     hook: str
     format: str
     script_pt_br: str
+    # True when the processor (Gemini, comparing against recently stored
+    # themes) judged this candidate's idea a near-duplicate of one already
+    # saved, even though it's a different video. The orchestrator skips
+    # storing it rather than treating this as a failure.
+    is_duplicate: bool = False
+    duplicate_reason: str = ""
 
 
 @dataclass(frozen=True)
@@ -53,3 +59,4 @@ class RunSummary:
     processed: int
     failed: int
     skipped: int
+    duplicates: int = 0

@@ -26,6 +26,10 @@ class Store(Protocol):
     def save(self, record) -> None:
         ...
 
+    def exists(self, video_url: str) -> bool:
+        """True if a record for this exact video URL is already stored."""
+        ...
+
 
 class Notifier(Protocol):
     def notify(self, summary: RunSummary) -> None:

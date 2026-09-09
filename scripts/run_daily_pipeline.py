@@ -22,8 +22,11 @@ def main() -> None:
         YouTubeCollector.from_env(),
         TikTokCollector(),
     ]
-    processor = TikTokDownloadingProcessor(inner=GeminiProcessor.from_env())
     store = SupabaseStore.from_env()
+    recent_themes = store.recent_themes()
+    processor = TikTokDownloadingProcessor(
+        inner=GeminiProcessor.from_env(recent_themes=recent_themes)
+    )
     notifier = WebPushNotifier.from_env(supabase_client=store._client)
     max_items = int(os.environ.get("DAILY_PIPELINE_MAX_ITEMS", DEFAULT_MAX_ITEMS))
 
