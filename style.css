@@ -264,15 +264,14 @@ a { color: inherit; }
 
 .source-swatch {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.45rem;
   margin-top: 0.35rem;
 }
 
 .source-swatch .glyph {
-  width: 2.4rem;
-  height: 2.4rem;
-  flex: none;
+  width: 100%;
+  aspect-ratio: 16 / 9;
   border: 1px solid var(--rim);
   border-radius: 3px;
   background: var(--panel-raised);
@@ -280,7 +279,7 @@ a { color: inherit; }
   align-items: center;
   justify-content: center;
   font-family: var(--mono);
-  font-size: 0.7rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--ink-dim);
 }

@@ -236,8 +236,10 @@ async function setupPush(registration) {
       await saveSubscription(subscription);
       pushToggle.textContent = "notificações ativas";
       pushToggle.dataset.state = "active";
-    } catch {
-      pushToggle.textContent = "falha ao ativar — tentar de novo";
+    } catch (err) {
+      console.error("push subscribe failed:", err);
+      pushToggle.textContent = `falha: ${err.message || err.name || "erro"} — tentar de novo`;
+      pushToggle.dataset.state = "";
     }
   });
 }
