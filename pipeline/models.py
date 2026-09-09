@@ -6,6 +6,11 @@ class VideoCandidate:
     platform: str
     url: str
     raw_metadata: dict
+    # Set by a download step (e.g. the TikTok transitory download in #7)
+    # before the candidate reaches the processor. The file at this path is
+    # expected to still exist when Processor.process() runs; the caller
+    # that set it owns deleting it afterwards.
+    local_video_path: str | None = None
 
 
 @dataclass(frozen=True)

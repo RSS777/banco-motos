@@ -47,5 +47,9 @@ class FakeNotifier:
         self.notifications.append(summary)
 
 
-def candidate(url: str, platform: str = "youtube") -> VideoCandidate:
-    return VideoCandidate(platform=platform, url=url, raw_metadata={})
+def candidate(
+    url: str, platform: str = "youtube", local_video_path: str | None = None
+) -> VideoCandidate:
+    return VideoCandidate(
+        platform=platform, url=url, raw_metadata={}, local_video_path=local_video_path
+    )
