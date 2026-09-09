@@ -54,8 +54,9 @@ def run_daily_pipeline(
     for candidate in candidates:
         try:
             result = processor.process(candidate)
-        except ProcessingError:
+        except ProcessingError as exc:
             failed += 1
+            logger.warning("Processing error for %s: %s", candidate.url, exc)
             continue
 
         # Different video, but the processor judged the idea itself a
