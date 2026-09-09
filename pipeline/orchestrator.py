@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timezone
 from typing import Callable, Sequence
 
@@ -5,6 +6,8 @@ from pipeline.interfaces import Collector, Notifier, ProcessingError, Processor,
 from pipeline.models import ContentRecord, RunSummary
 
 DEFAULT_MAX_ITEMS = 15
+
+logger = logging.getLogger("pipeline.orchestrator")
 
 
 def run_daily_pipeline(
@@ -22,6 +25,7 @@ def run_daily_pipeline(
         for outcome in collector.collect():
             if outcome.error is not None:
                 skipped += 1
+                logger.warning("Collection error: %s", outcome.error)
                 continue
             # Same video URL already stored: skip before it ever reaches the
             # processor, so a repeat costs nothing (no Gemini call) and

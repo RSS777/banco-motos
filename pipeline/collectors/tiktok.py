@@ -1,3 +1,4 @@
+import re
 import time
 import urllib.parse
 from typing import Iterable
@@ -105,7 +106,10 @@ class TikTokCollector:
 
         if results is None:
             yield CollectionOutcome(
-                error=f"TikTok search blocked or returned no usable data for term '{term}'"
+                error=(
+                    f"TikTok search blocked or returned no usable data for term '{term}' "
+                    f"(diagnostic: {self._diagnose(page)})"
+                )
             )
             return
 
@@ -113,6 +117,27 @@ class TikTokCollector:
             candidate = build_candidate_from_search_entry(entry, term)
             if candidate is not None:
                 yield CollectionOutcome(candidate=candidate)
+
+    def _diagnose(self, page) -> str:
+        """Best-effort hint about *why* no search XHR was captured, for the
+        error string only — never raises, since this runs in the failure path.
+        """
+        try:
+            html = page.html_content or ""
+            title_match = re.search(r"<title>(.*?)</title>", html, re.I | re.S)
+            title = title_match.group(1).strip() if title_match else "?"
+            xhr_count = len(page.captured_xhr or [])
+            flags = [
+                kw
+                for kw in ("captcha", "verify", "unusual traffic", "blocked", "robot")
+                if kw in html.lower()
+            ]
+            return (
+                f"title={title!r} html_len={len(html)} xhr_captured={xhr_count} "
+                f"flags={flags or 'none'}"
+            )
+        except Exception as exc:  # noqa: BLE001 - diagnostics must never mask the real error
+            return f"diagnose failed: {exc}"
 
     def _extract_results(self, page, term: str) -> list[dict] | None:
         for xhr in page.captured_xhr or []:
