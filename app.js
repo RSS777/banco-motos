@@ -162,7 +162,7 @@ function urlBase64ToUint8Array(base64String) {
 
 async function saveSubscription(subscription) {
   const json = subscription.toJSON();
-  await fetch(`${SUPABASE_URL}/rest/v1/push_subscriptions`, {
+  const resp = await fetch(`${SUPABASE_URL}/rest/v1/push_subscriptions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -176,6 +176,9 @@ async function saveSubscription(subscription) {
       auth: json.keys.auth,
     }),
   });
+  if (!resp.ok) {
+    throw new Error(`Supabase insert failed: ${resp.status} ${await resp.text()}`);
+  }
 }
 
 async function setupPush(registration) {
@@ -187,6 +190,10 @@ async function setupPush(registration) {
 
   const existing = await registration.pushManager.getSubscription();
   if (existing) {
+    // Re-save on every load (idempotent via ignore-duplicates): keeps
+    // Supabase in sync even if an earlier save failed after the browser
+    // already held the subscription.
+    saveSubscription(existing).catch(() => {});
     pushToggle.textContent = "notificações ativas";
     pushToggle.dataset.state = "active";
   } else if (Notification.permission === "denied") {
