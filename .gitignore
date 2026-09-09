@@ -5,3 +5,5 @@ __pycache__/
 .impeccable/config.local.json
 .env
 supabase/.temp/
+.impeccable/review/
+.impeccable/build/

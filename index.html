@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>banco-motos</title>
+  <meta name="description" content="Painel diário de vídeos e roteiros de moto elétrica">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="theme-color" content="#0b0d0c">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="dash-strip">
+    <span class="wordmark">banco<span class="spark">-</span>motos</span>
+    <span class="readout" id="dash-readout">—</span>
+  </header>
+
+  <div class="trip-computer" id="trip-computer">
+    <button type="button" class="trip-toggle" id="trip-toggle" aria-expanded="false" aria-controls="trip-fields">
+      buscar / filtrar
+    </button>
+    <div class="trip-fields" id="trip-fields">
+      <input type="search" id="dash-search" placeholder="buscar tema, gancho, roteiro…" aria-label="Buscar">
+      <div class="chip-row" role="group" aria-label="Filtrar por plataforma">
+        <button type="button" class="chip" data-platform="all" aria-pressed="true">Todos</button>
+        <button type="button" class="chip" data-platform="youtube" aria-pressed="false">YouTube</button>
+        <button type="button" class="chip" data-platform="tiktok" aria-pressed="false">TikTok</button>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <p class="dash-status" id="dash-status" hidden></p>
+    <div class="tile-bank" id="tile-bank"></div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

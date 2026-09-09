@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-09T00:00:00Z",
+  "title": "Design System: banco-motos",
+  "extensions": {
+    "colorMeta": {
+      "ground": { "role": "neutral", "displayName": "Instrument Ground", "canonical": "#0b0d0c", "tonalRamp": ["#050605", "#0b0d0c", "#141715", "#191d1a", "#242624", "#3a3f3c", "#9aa19c", "#e9ece9"] },
+      "panel": { "role": "neutral", "displayName": "Panel", "canonical": "#141715", "tonalRamp": ["#050605", "#0b0d0c", "#141715", "#191d1a", "#242624", "#3a3f3c", "#9aa19c", "#e9ece9"] },
+      "panel-raised": { "role": "neutral", "displayName": "Panel Raised", "canonical": "#191d1a", "tonalRamp": ["#050605", "#0b0d0c", "#141715", "#191d1a", "#242624", "#3a3f3c", "#9aa19c", "#e9ece9"] },
+      "rim": { "role": "neutral", "displayName": "Rim", "canonical": "#3a3f3c", "tonalRamp": ["#141715", "#191d1a", "#242624", "#3a3f3c", "#585e5a", "#787f7a", "#9aa19c", "#c4c9c4"] },
+      "rim-dim": { "role": "neutral", "displayName": "Rim Dim", "canonical": "#242624", "tonalRamp": ["#0b0d0c", "#141715", "#191d1a", "#242624", "#3a3f3c", "#585e5a", "#787f7a", "#9aa19c"] },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#e9ece9", "tonalRamp": ["#141715", "#242624", "#3a3f3c", "#585e5a", "#787f7a", "#9aa19c", "#c4c9c4", "#e9ece9"] },
+      "ink-dim": { "role": "neutral", "displayName": "Ink Dim", "canonical": "#9aa19c", "tonalRamp": ["#141715", "#242624", "#3a3f3c", "#585e5a", "#6f766f", "#9aa19c", "#c4c9c4", "#e9ece9"] },
+      "amber": { "role": "primary", "displayName": "Regen-Brake Amber", "canonical": "#e08d3d", "tonalRamp": ["#3a2410", "#5c3a18", "#7e4f20", "#a86a2c", "#c9975a", "#e08d3d", "#eeb37e", "#f7d6ba"] },
+      "amber-dim": { "role": "primary", "displayName": "Amber Dim (label-contrast variant)", "canonical": "#c9975a", "tonalRamp": ["#3a2410", "#5c3a18", "#7e4f20", "#a86a2c", "#c9975a", "#e08d3d", "#eeb37e", "#f7d6ba"] },
+      "teal": { "role": "secondary", "displayName": "Pronto State-Light Teal", "canonical": "#4fa89b", "tonalRamp": ["#0e2622", "#173c36", "#20524a", "#2c5750", "#37796e", "#4fa89b", "#7fc3b8", "#b3ddd5"] },
+      "teal-dim": { "role": "secondary", "displayName": "Teal Dim", "canonical": "#2c5750", "tonalRamp": ["#0e2622", "#173c36", "#20524a", "#2c5750", "#37796e", "#4fa89b", "#7fc3b8", "#b3ddd5"] }
+    },
+    "typographyMeta": {
+      "wordmark": { "displayName": "Wordmark", "purpose": "The banco-motos title in the sticky top strip only." },
+      "label": { "displayName": "Label", "purpose": "Structural/UI labels: gauge labels, platform label, chips, toggles, expand button. Always mono, uppercase." },
+      "numeral": { "displayName": "Numeral", "purpose": "Counts, dates, timestamps. Always mono with tabular-nums so digits don't jiggle." },
+      "body": { "displayName": "Value", "purpose": "Gauge reading content and roteiro prose. Always sans." }
+    },
+    "shadows": [],
+    "motion": [],
+    "breakpoints": [
+      { "name": "desktop", "value": "720px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Tile with Gauge Triad",
+      "kind": "card",
+      "refersTo": "tile",
+      "description": "One instrument tile per collected video: head (platform label, timestamp, pronto state light) plus a three-gauge triad and an expandable roteiro footer.",
+      "html": "<div class=\"ds-tile\"><div class=\"ds-tile-head\"><span class=\"ds-platform-light\">YOUTUBE</span><div class=\"ds-tile-head-right\"><time>09/09</time><span class=\"ds-state-light\" title=\"pronto\"></span></div></div><div class=\"ds-gauge-triad\"><div class=\"ds-gauge\"><span class=\"ds-label\">TEMA / GANCHO / FORMATO</span><div class=\"ds-value\">Autonomia real em dia frio: teste comparativo entre 3 modelos.</div></div><div class=\"ds-gauge\"><span class=\"ds-label\">VÍDEO-FONTE</span><div class=\"ds-source-swatch\"><span class=\"ds-glyph\">YT</span><a class=\"ds-source-link\" href=\"#\">youtube.com/watch?v=…</a></div></div><div class=\"ds-gauge\"><span class=\"ds-label\">ROTEIRO</span><div class=\"ds-value\">Gancho: abrir com o medidor de autonomia caindo em tempo real…</div></div></div><button type=\"button\" class=\"ds-expand-btn\">VER ROTEIRO COMPLETO</button></div>",
+      "css": ".ds-tile { background: #141715; border: 1px solid #242624; border-radius: 4px; overflow: hidden; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; color: #e9ece9; } .ds-tile-head { display: flex; align-items: center; justify-content: space-between; padding: 0.55rem 0.75rem; border-bottom: 1px solid #242624; } .ds-platform-light { font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: #9aa19c; } .ds-tile-head-right { display: flex; align-items: center; gap: 0.6rem; } .ds-tile-head time { font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace; font-size: 0.72rem; color: #9aa19c; font-variant-numeric: tabular-nums; } .ds-state-light { width: 0.55rem; height: 0.55rem; border-radius: 50%; background: #4fa89b; flex: none; } .ds-gauge-triad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: #242624; } .ds-gauge { background: #141715; padding: 0.6rem 0.7rem 0.7rem; min-width: 0; } .ds-label { font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: #c9975a; display: block; margin-bottom: 0.3rem; } .ds-value { font-size: 0.82rem; line-height: 1.35; color: #e9ece9; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; } .ds-source-swatch { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.35rem; } .ds-glyph { width: 1.7rem; height: 1.7rem; flex: none; border: 1px solid #3a3f3c; border-radius: 3px; background: #191d1a; display: flex; align-items: center; justify-content: center; font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace; font-size: 0.7rem; font-weight: 600; color: #9aa19c; } .ds-source-link { font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace; font-size: 0.72rem; color: #9aa19c; text-decoration: underline; text-underline-offset: 2px; word-break: break-all; } .ds-source-link:hover, .ds-source-link:focus-visible { color: #e08d3d; } .ds-expand-btn { width: 100%; background: #191d1a; border: none; border-top: 1px solid #242624; color: #9aa19c; font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace; font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; padding: 0.5rem; cursor: pointer; text-align: center; } .ds-expand-btn:hover, .ds-expand-btn:focus-visible { color: #e08d3d; }"
+    },
+    {
+      "name": "Trip Computer Toggle",
+      "kind": "button",
+      "refersTo": "trip-toggle",
+      "description": "Collapsed-by-default icon-button that expands the search/filter sub-panel; mono uppercase, shifts to amber on hover/expanded.",
+      "html": "<button type=\"button\" class=\"ds-trip-toggle\" aria-expanded=\"false\">buscar / filtrar</button>",
+      "css": ".ds-trip-toggle { background: #141715; border: 1px solid #242624; border-radius: 3px; color: #9aa19c; font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace; font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; padding: 0.4rem 0.65rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; } .ds-trip-toggle:hover, .ds-trip-toggle:focus-visible, .ds-trip-toggle[aria-expanded='true'] { color: #e08d3d; border-color: #c9975a; }"
+    },
+    {
+      "name": "Platform Filter Chip",
+      "kind": "chip",
+      "refersTo": "chip-active",
+      "description": "Platform filter chip; inactive is neutral outline, active inverts to solid amber fill (the only solid-amber-fill surface in the system).",
+      "html": "<div class=\"ds-chip-row\"><button type=\"button\" class=\"ds-chip\" aria-pressed=\"true\">Todos</button><button type=\"button\" class=\"ds-chip\" aria-pressed=\"false\">YouTube</button></div>",
+      "css": ".ds-chip-row { display: flex; gap: 0.4rem; } .ds-chip { font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace; font-size: 0.72rem; letter-spacing: 0.04em; text-transform: uppercase; padding: 0.35rem 0.6rem; border: 1px solid #242624; border-radius: 3px; background: #141715; color: #9aa19c; cursor: pointer; } .ds-chip:hover, .ds-chip:focus-visible { color: #e08d3d; } .ds-chip[aria-pressed='true'] { color: #0b0d0c; background: #e08d3d; border-color: #e08d3d; }"
+    },
+    {
+      "name": "Search Input",
+      "kind": "input",
+      "refersTo": null,
+      "description": "Trip-computer search field for tema/gancho/roteiro keyword search.",
+      "html": "<input type=\"search\" class=\"ds-search\" placeholder=\"buscar tema, gancho, roteiro…\" aria-label=\"Buscar\">",
+      "css": ".ds-search { flex: 1 1 10rem; min-width: 0; background: #141715; border: 1px solid #242624; border-radius: 3px; color: #e9ece9; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 0.9rem; padding: 0.45rem 0.6rem; } .ds-search::placeholder { color: #9aa19c; }"
+    },
+    {
+      "name": "Top Instrument Strip",
+      "kind": "nav",
+      "refersTo": null,
+      "description": "Sticky page header: wordmark with amber-accented hyphen, tabular-mono item-count + date readout, amber bottom rule.",
+      "html": "<header class=\"ds-dash-strip\"><span class=\"ds-wordmark\">banco<span class=\"ds-spark\">-</span>motos</span><span class=\"ds-readout\">12 ITENS · 09/09/2026</span></header>",
+      "css": ".ds-dash-strip { display: flex; align-items: baseline; justify-content: space-between; padding: 0.9rem 1rem 0.7rem; background: #0b0d0c; border-bottom: 1px solid #e08d3d; } .ds-wordmark { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-weight: 700; letter-spacing: 0.02em; font-size: 1.05rem; color: #e9ece9; } .ds-spark { color: #e08d3d; } .ds-readout { font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace; font-size: 0.8rem; color: #9aa19c; text-align: right; font-variant-numeric: tabular-nums; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Electric-Moto Instrument Cluster",
+    "overview": "banco-motos reads its daily haul of scraped videos and generated roteiros the way a moto elétrica's dashboard reads speed, charge, and regen state: as a bank of equal-weight instrument tiles, not a scrolling social feed. The subject of the product (moto elétrica) supplies its own visual language, so the panel borrows the discipline of a real instrument cluster — near-black body, one warm signal accent used sparingly, tabular numerals that don't jiggle, thin rules only where a gauge boundary actually exists. There is no glow, no bloom, no decorative color; precision over mood is the whole point, because the user scans this one-handed on a phone right after a push notification. The palette is intentionally restrained to two functional colors on a near-black ground: amber for the single most important signal per surface, and teal reserved exclusively for the 'pronto' state light. Every other value on the page is neutral ink or dim ink — there is no rainbow of platform colors, no rotating accent per tile.",
+    "keyCharacteristics": [
+      "Near-black instrument body with two functional accent colors, never decorative color",
+      "Monospace numerals and labels for anything gauge-like (counts, dates, times, labels); system sans for prose (roteiro body, wordmark)",
+      "Flat surfaces separated by 1px rules that mark real instrument-panel boundaries, not shadows",
+      "Equal-weight three-gauge triad per tile: no gauge outranks another visually"
+    ],
+    "rules": [
+      { "name": "The Two-Signal Rule", "body": "Only two colors carry meaning: amber for the single most important accent, teal for the one binary state the data can represent. Every other color on the page is neutral. A third functional color is not added without a third distinct state to represent.", "section": "colors" },
+      { "name": "The Rarity Rule", "body": "Amber never repeats per-tile as a decorative habit — it marks the top strip's boundary once, and otherwise only appears on interactive/active states. It does not recolor every label or icon.", "section": "colors" },
+      { "name": "The Numeral Discipline Rule", "body": "Any value that is a count, date, or timestamp renders in the monospace stack with tabular figures — never in the sans body font. Prose content (tema, gancho, roteiro text) always renders in sans, never in mono.", "section": "typography" },
+      { "name": "The No-Glow Rule", "body": "Depth comes from flat tonal steps and 1px rules only. No box-shadow, no blur, no glow is used anywhere, including on hover/active states (which shift color, not elevation).", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep amber and teal as the only two functional colors; every other value is neutral ink or panel/ground tone.",
+      "Do render counts, dates, and timestamps in the monospace stack with tabular figures; render prose (tema, gancho, roteiro) in sans.",
+      "Do use flat tonal layering (ground → panel → panel-raised) and 1px rim rules for depth and structure — never a shadow.",
+      "Do keep the three-gauge triad equal-width and equal-weight; no gauge visually outranks another.",
+      "Do keep platform identity as a plain text label, never a color-coded dot — color is reserved for the amber/teal signal roles, not for categorical/identity data."
+    ],
+    "donts": [
+      "Don't add glow, blur, or box-shadow anywhere, including on hover/active states — depth is tonal and rule-based only, per the OWN-WORLD 'precision over mood' contract.",
+      "Don't add a third functional color without a third distinct state to represent; teal exists only because 'pronto' is the sole state the stored data can carry.",
+      "Don't decorate with amber — it marks the single most important signal per surface, not a repeating accent per item.",
+      "Don't use pill (fully rounded) shapes or sharp zero-radius edges — the system's radius vocabulary is 3px (controls) and 4px (tiles) only."
+    ]
+  }
+}

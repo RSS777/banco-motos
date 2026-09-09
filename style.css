@@ -1,0 +1,316 @@
+:root {
+  --ground: #0b0d0c;
+  --panel: #141715;
+  --panel-raised: #191d1a;
+  --rim: #3a3f3c;
+  --rim-dim: #242624;
+  --ink: #e9ece9;
+  --ink-dim: #9aa19c;
+  --amber: #e08d3d;
+  --amber-dim: #c9975a;
+  --teal: #4fa89b;
+  --teal-dim: #2c5750;
+
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  min-height: 100vh;
+  padding-bottom: 3rem;
+}
+
+a { color: inherit; }
+
+/* ---- top instrument strip ---- */
+
+.dash-strip {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0.9rem 1rem 0.7rem;
+  background: var(--ground);
+  border-bottom: 1px solid var(--amber);
+}
+
+.dash-strip .wordmark {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  font-size: 1.05rem;
+}
+
+.dash-strip .wordmark .spark { color: var(--amber); }
+
+.dash-strip .readout {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--ink-dim);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- trip-computer search/filter row ---- */
+
+.trip-computer {
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--rim-dim);
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.trip-toggle {
+  background: var(--panel);
+  border: 1px solid var(--rim-dim);
+  border-radius: 3px;
+  color: var(--ink-dim);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.65rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.trip-toggle:hover, .trip-toggle[aria-expanded="true"] { color: var(--amber); border-color: var(--amber-dim); }
+
+.trip-fields {
+  display: none;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  flex: 1 1 100%;
+}
+
+.trip-computer.is-expanded .trip-fields { display: flex; }
+
+.trip-computer input[type="search"] {
+  flex: 1 1 10rem;
+  min-width: 0;
+  background: var(--panel);
+  border: 1px solid var(--rim-dim);
+  border-radius: 3px;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  padding: 0.45rem 0.6rem;
+}
+
+.trip-computer input[type="search"]::placeholder { color: var(--ink-dim); }
+
+.chip-row { display: flex; gap: 0.4rem; }
+
+.chip {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--rim-dim);
+  border-radius: 3px;
+  background: var(--panel);
+  color: var(--ink-dim);
+  cursor: pointer;
+}
+
+.chip[aria-pressed="true"] {
+  color: var(--ground);
+  background: var(--amber);
+  border-color: var(--amber);
+}
+
+/* ---- tile bank ---- */
+
+.tile-bank {
+  padding: 0.75rem 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.tile {
+  background: var(--panel);
+  border: 1px solid var(--rim-dim);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.tile-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--rim-dim);
+}
+
+.platform-light {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-dim);
+}
+
+.tile-head-right {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.tile-head time {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The state light is the ONLY use of teal on the page: it marks a row as
+   "pronto" (this record only exists because processing already succeeded —
+   there is no failed/skipped state to show, since those never reach the
+   store). */
+.state-light {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--teal);
+  flex: none;
+}
+
+.gauge-triad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--rim-dim);
+}
+
+.gauge {
+  background: var(--panel);
+  padding: 0.6rem 0.7rem 0.7rem;
+  min-width: 0;
+}
+
+.gauge .label {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--amber-dim);
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+.gauge .value {
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: var(--ink);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.gauge .value.sub {
+  color: var(--ink-dim);
+  font-size: 0.74rem;
+  margin-top: 0.25rem;
+  -webkit-line-clamp: 2;
+}
+
+.source-swatch {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.source-swatch .glyph {
+  width: 1.7rem;
+  height: 1.7rem;
+  flex: none;
+  border: 1px solid var(--rim);
+  border-radius: 3px;
+  background: var(--panel-raised);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--ink-dim);
+}
+
+.gauge a.source-link {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink-dim);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-all;
+}
+
+.gauge a.source-link:hover { color: var(--amber); }
+
+.tile-expand-btn {
+  width: 100%;
+  background: var(--panel-raised);
+  border: none;
+  border-top: 1px solid var(--rim-dim);
+  color: var(--ink-dim);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.5rem;
+  cursor: pointer;
+  text-align: center;
+}
+
+.tile-expand-btn:hover { color: var(--amber); }
+
+.tile-script {
+  display: none;
+  padding: 0.85rem 0.9rem 1rem;
+  border-top: 1px solid var(--rim-dim);
+  white-space: pre-wrap;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.tile.is-open .tile-script { display: block; }
+.tile.is-open .tile-expand-btn { color: var(--amber); }
+
+/* ---- empty / loading states ---- */
+
+.dash-status {
+  padding: 3rem 1.25rem;
+  text-align: center;
+  color: var(--ink-dim);
+  font-family: var(--mono);
+  font-size: 0.85rem;
+}
+
+.dash-status .accent { color: var(--amber); }
+
+/* ---- desktop widths ---- */
+
+@media (min-width: 720px) {
+  .dash-strip, .trip-computer, .tile-bank { padding-left: 2rem; padding-right: 2rem; }
+  .tile-bank { max-width: 68rem; margin: 0 auto; width: 100%; }
+}
