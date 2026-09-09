@@ -1,14 +1,23 @@
 import json
+import logging
 import os
 import time
 
 from google import genai
-from google.genai import types
+from google.genai import errors, types
 
 from pipeline.interfaces import ProcessingError
 from pipeline.models import ProcessedResult, VideoCandidate
 
 DEFAULT_MODEL = "gemini-flash-lite-latest"
+
+logger = logging.getLogger("pipeline.gemini_processor")
+
+# Transient overload (503) and rate limiting (429) are common enough on the
+# free tier to be worth a few retries; anything else (bad request, auth,
+# etc.) fails fast instead of burning time on a retry that can't succeed.
+MAX_ATTEMPTS = 3
+RETRY_BACKOFF_SECONDS = [5, 20]
 
 PROMPT_TEMPLATE = """Você é um analista de conteúdo de vídeos curtos sobre moto elétrica.
 
@@ -89,21 +98,14 @@ class GeminiProcessor:
     def process(self, candidate: VideoCandidate) -> ProcessedResult:
         try:
             video_part = self._video_part(candidate)
-            recent_block = "\n".join(self._recent_themes) or "(nenhum ainda)"
-            prompt = PROMPT_TEMPLATE.format(recent_themes_block=recent_block)
-            response = self._client.models.generate_content(
-                model=self._model,
-                contents=[video_part, prompt],
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    response_schema=RESPONSE_SCHEMA,
-                ),
-            )
-            data = json.loads(response.text)
         except ProcessingError:
             raise
         except Exception as exc:  # noqa: BLE001 - any Gemini/network failure is a processing failure
             raise ProcessingError(f"Gemini processing failed for {candidate.url}: {exc}") from exc
+
+        recent_block = "\n".join(self._recent_themes) or "(nenhum ainda)"
+        prompt = PROMPT_TEMPLATE.format(recent_themes_block=recent_block)
+        data = self._generate_with_retry(video_part, prompt, candidate.url)
 
         is_duplicate = bool(data["is_duplicate"])
         if not is_duplicate:
@@ -117,6 +119,44 @@ class GeminiProcessor:
             is_duplicate=is_duplicate,
             duplicate_reason=data.get("duplicate_reason", ""),
         )
+
+    def _generate_with_retry(self, video_part, prompt: str, url: str) -> dict:
+        last_exc: Exception | None = None
+        for attempt in range(MAX_ATTEMPTS):
+            try:
+                response = self._client.models.generate_content(
+                    model=self._model,
+                    contents=[video_part, prompt],
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                        response_schema=RESPONSE_SCHEMA,
+                    ),
+                )
+                return json.loads(response.text)
+            except errors.ServerError as exc:
+                last_exc = exc
+            except errors.ClientError as exc:
+                if exc.code != 429:
+                    raise ProcessingError(f"Gemini processing failed for {url}: {exc}") from exc
+                last_exc = exc
+            except Exception as exc:  # noqa: BLE001 - any other failure is not worth retrying
+                raise ProcessingError(f"Gemini processing failed for {url}: {exc}") from exc
+
+            if attempt < MAX_ATTEMPTS - 1:
+                wait = RETRY_BACKOFF_SECONDS[attempt]
+                logger.warning(
+                    "Gemini call failed for %s (attempt %s/%s): %s — retrying in %ss",
+                    url,
+                    attempt + 1,
+                    MAX_ATTEMPTS,
+                    last_exc,
+                    wait,
+                )
+                time.sleep(wait)
+
+        raise ProcessingError(
+            f"Gemini processing failed for {url} after {MAX_ATTEMPTS} attempts: {last_exc}"
+        ) from last_exc
 
     def _video_part(self, candidate: VideoCandidate):
         if candidate.local_video_path:

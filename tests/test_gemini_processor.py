@@ -1,7 +1,7 @@
 import json
 
 import pytest
-from google.genai import types
+from google.genai import errors, types
 
 from pipeline.interfaces import ProcessingError
 from pipeline.processors.gemini_processor import GeminiProcessor
@@ -34,6 +34,8 @@ class _FakeModels:
         self.all_contents.append(contents)
         result = self._results[min(self._call_index, len(self._results) - 1)]
         self._call_index += 1
+        if isinstance(result, Exception):
+            raise result
         return _FakeResponse(result)
 
 
@@ -134,3 +136,61 @@ def test_duplicate_result_does_not_join_recent_themes_but_original_does():
     processor.process(candidate("https://www.youtube.com/watch?v=b", platform="youtube"))
 
     assert processor._recent_themes == ["tema A — gancho A"]
+
+
+def test_transient_server_error_is_retried_and_eventually_succeeds(monkeypatch):
+    import pipeline.processors.gemini_processor as module
+
+    monkeypatch.setattr(module.time, "sleep", lambda _seconds: None)
+    overload = errors.ServerError(503, {"error": {"message": "overloaded"}})
+    client = _FakeClient(results=[overload, FAKE_RESULT])
+    processor = GeminiProcessor(client=client)
+
+    result = processor.process(candidate("https://www.youtube.com/watch?v=a", platform="youtube"))
+
+    assert result.script_pt_br == "roteiro"
+    assert client.models._call_index == 2  # first attempt failed, second succeeded
+
+
+def test_server_error_exhausts_retries_and_raises_processing_error(monkeypatch):
+    import pipeline.processors.gemini_processor as module
+
+    monkeypatch.setattr(module.time, "sleep", lambda _seconds: None)
+    overload = errors.ServerError(503, {"error": {"message": "overloaded"}})
+    client = _FakeClient(results=[overload, overload, overload])
+    processor = GeminiProcessor(client=client)
+
+    with pytest.raises(ProcessingError):
+        processor.process(candidate("https://www.youtube.com/watch?v=a", platform="youtube"))
+
+    assert client.models._call_index == module.MAX_ATTEMPTS
+
+
+def test_rate_limit_429_is_retried_like_server_error(monkeypatch):
+    import pipeline.processors.gemini_processor as module
+
+    monkeypatch.setattr(module.time, "sleep", lambda _seconds: None)
+    rate_limited = errors.ClientError(429, {"error": {"message": "rate limited"}})
+    client = _FakeClient(results=[rate_limited, FAKE_RESULT])
+    processor = GeminiProcessor(client=client)
+
+    result = processor.process(candidate("https://www.youtube.com/watch?v=a", platform="youtube"))
+
+    assert result.script_pt_br == "roteiro"
+
+
+def test_non_retryable_client_error_fails_immediately_without_retry(monkeypatch):
+    import pipeline.processors.gemini_processor as module
+
+    def fail_if_slept(_seconds):
+        raise AssertionError("should not retry a non-retryable client error")
+
+    monkeypatch.setattr(module.time, "sleep", fail_if_slept)
+    bad_request = errors.ClientError(400, {"error": {"message": "bad request"}})
+    client = _FakeClient(results=[bad_request, FAKE_RESULT])
+    processor = GeminiProcessor(client=client)
+
+    with pytest.raises(ProcessingError):
+        processor.process(candidate("https://www.youtube.com/watch?v=a", platform="youtube"))
+
+    assert client.models._call_index == 1  # never attempted a second call
