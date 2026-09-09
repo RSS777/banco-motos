@@ -6,7 +6,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from pipeline.collectors.tiktok import TikTokCollector
 from pipeline.collectors.youtube import YouTubeCollector
-from pipeline.notifiers.logging_notifier import LoggingNotifier
+from pipeline.notifiers.web_push_notifier import WebPushNotifier
 from pipeline.orchestrator import run_daily_pipeline
 from pipeline.processors.gemini_processor import GeminiProcessor
 from pipeline.processors.tiktok_download_processor import TikTokDownloadingProcessor
@@ -24,7 +24,7 @@ def main() -> None:
     ]
     processor = TikTokDownloadingProcessor(inner=GeminiProcessor.from_env())
     store = SupabaseStore.from_env()
-    notifier = LoggingNotifier()
+    notifier = WebPushNotifier.from_env(supabase_client=store._client)
     max_items = int(os.environ.get("DAILY_PIPELINE_MAX_ITEMS", DEFAULT_MAX_ITEMS))
 
     summary = run_daily_pipeline(
