@@ -12,7 +12,10 @@
 
 <script>
 const SUPABASE_URL = "https://lfnncwknrmtifezxiqnd.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_-FltxZra7lwIbk1OpsAJrg_EK1mDxXv";
+// Legacy JWT anon key — the sb_publishable_... key does not evaluate as
+// Postgres role `anon` for this insert, see app.js for the full note.
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxmbm5jd2tucm10aWZlenhpcW5kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5NTQ5ODgsImV4cCI6MjEwNDUzMDk4OH0.bd6lkh7T0QrG9fncpJbka0z4H--K9kogrf48cr7GFPs";
 const VAPID_PUBLIC_KEY = "BAgsKO6Dkl2d799sY9Y9i7J3kuk58GC7thLoCpIKdMF9HQTeS_JftcAKmc9Df6gJO21nG8OuMLQnpki-RRAbMUE";
 
 const log = (msg) => { document.getElementById("log").textContent += msg + "\n"; console.log(msg); };

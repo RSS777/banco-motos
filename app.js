@@ -1,5 +1,10 @@
 const SUPABASE_URL = "https://lfnncwknrmtifezxiqnd.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_-FltxZra7lwIbk1OpsAJrg_EK1mDxXv";
+// The legacy JWT anon key, not the newer sb_publishable_... key: the
+// publishable key does not evaluate as Postgres role `anon` for RLS here
+// (INSERT on push_subscriptions returned 42501 with it; the legacy key
+// works for both the read-only content_records policy and this insert).
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxmbm5jd2tucm10aWZlenhpcW5kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5NTQ5ODgsImV4cCI6MjEwNDUzMDk4OH0.bd6lkh7T0QrG9fncpJbka0z4H--K9kogrf48cr7GFPs";
 
 const PLATFORM_LABEL = { youtube: "YouTube", tiktok: "TikTok" };
 
