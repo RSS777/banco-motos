@@ -8,22 +8,24 @@ on:
 
 jobs:
   run:
-    runs-on: ubuntu-latest
+    # Self-hosted on the user's own VPS, not a GitHub-hosted runner: TikTok
+    # silently withholds search results (page loads, the search XHR itself
+    # never fires) from GitHub Actions' shared datacenter IP ranges — a
+    # dedicated VPS IP has a real chance of not being flagged the same way.
+    # See issue #8's close comment for how this was diagnosed.
+    runs-on: [self-hosted, vps]
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install dependencies
+      - name: Set up virtualenv
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          python3 -m venv .venv
+          .venv/bin/pip install --upgrade pip
+          .venv/bin/pip install -r requirements.txt
 
       - name: Install scrapling browser dependencies
-        run: scrapling install
+        run: .venv/bin/scrapling install
 
       - name: Run daily pipeline
         env:
@@ -33,4 +35,4 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
           VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
-        run: python scripts/run_daily_pipeline.py
+        run: .venv/bin/python scripts/run_daily_pipeline.py
